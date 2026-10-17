@@ -1,0 +1,5 @@
+/* Base reset lives mostly in App.css; keep document defaults minimal. */
+button,
+input {
+  font: inherit;
+}
