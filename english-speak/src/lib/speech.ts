@@ -60,6 +60,12 @@ export async function speak(text: string, options: SpeakOptions = {}): Promise<v
         resolve();
         return;
       }
+      // Headless / locked-down environments often block TTS; don't hard-fail the flow.
+      if (event.error === "synthesis-failed" || event.error === "audio-busy") {
+        console.warn("Speech synthesis unavailable:", event.error);
+        resolve();
+        return;
+      }
       reject(new Error(event.error || "Speech failed"));
     };
 
