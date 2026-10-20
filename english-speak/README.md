@@ -1,10 +1,10 @@
-# SpeakDay
+# english-speak (optional Vite version)
 
-Daily **morning + afternoon** English speaking trainer with real **audio conversations**.
+This is the **developer** React/Vite build of SpeakDay.
 
-Built for meetings and daily life: the app speaks as your partner (browser TTS), then you answer out loud (microphone speech recognition when available).
+For normal use with **XAMPP**, ignore this folder and use `../speakday/` instead — copy it into XAMPP `htdocs` and open `http://localhost/speakday/`. See [`../speakday/README.md`](../speakday/README.md).
 
-## Run
+## Run (Vite)
 
 ```bash
 cd english-speak

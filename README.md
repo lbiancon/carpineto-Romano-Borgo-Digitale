@@ -1,13 +1,17 @@
-# SpeakDay — English audio conversation routine
+# SpeakDay — English fluency teacher
 
-Interactive daily trainer for speaking English in **meetings** and **daily life**.
+Long-term speaking coach for **meetings** and **daily life**.
 
-## Quick start
+## XAMPP (recommended)
 
-```bash
-cd english-speak
-npm install
-npm run dev
-```
+1. Copy `speakday/` into XAMPP `htdocs`
+2. Start Apache
+3. Open `http://localhost/speakday/`
 
-See [`english-speak/README.md`](english-speak/README.md) for details.
+The app **auto-updates** its curriculum (`data/curriculum.json`) from GitHub when online. Progress/SRS stay in your browser.
+
+Details: [`speakday/README.md`](speakday/README.md)
+
+## Optional Vite copy
+
+`english-speak/` is a developer React version. Not required for XAMPP.
