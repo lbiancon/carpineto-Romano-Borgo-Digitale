@@ -1,5 +1,7 @@
 /** Browser TTS + mic helpers for SpeakDay (no Node, works on XAMPP/Apache). */
 (function (global) {
+  let activeRecognition = null;
+
   function pickEnglishVoice() {
     const voices = speechSynthesis.getVoices();
     if (!voices.length) return null;
@@ -33,6 +35,20 @@
 
   function stopSpeaking() {
     if ("speechSynthesis" in window) speechSynthesis.cancel();
+  }
+
+  function stopListening() {
+    if (activeRecognition) {
+      try {
+        activeRecognition.onend = null;
+        activeRecognition.onerror = null;
+        activeRecognition.onresult = null;
+        activeRecognition.stop();
+      } catch (_) {
+        /* ignore */
+      }
+      activeRecognition = null;
+    }
   }
 
   async function speak(text, options = {}) {
@@ -69,48 +85,135 @@
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   }
 
-  function listenOnce(timeoutMs = 12000) {
+  function friendlyMicError(code) {
+    const map = {
+      "no-speech":
+        "No speech heard. Click “Tap to speak”, wait for Listening…, then speak louder in English.",
+      "audio-capture":
+        "Microphone not found. Check Windows mic settings and allow Chrome to use the mic.",
+      "not-allowed":
+        "Microphone blocked. Click the lock icon in the address bar → allow microphone → reload.",
+      "service-not-allowed":
+        "Mic blocked by browser policy. Use Chrome/Edge on http://localhost/speakday/",
+      network: "Speech service needs internet. Check your connection and try again.",
+      aborted: "Listening was interrupted. Tap to speak again.",
+      "language-not-supported": "English recognition not available in this browser.",
+    };
+    return map[code] || `Microphone error (${code}). Try Chrome/Edge and allow the mic.`;
+  }
+
+  /** Warm up mic permission so recognition is less flaky. */
+  async function ensureMicPermission() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((t) => t.stop());
+  }
+
+  /**
+   * Listen until a final transcript arrives (or timeout).
+   * Stops TTS first — Chrome often fails if synthesis is still running.
+   */
+  async function listenOnce(timeoutMs = 20000) {
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      throw new Error("Speech recognition is not supported. Use Chrome or Edge.");
+    }
+
+    stopSpeaking();
+    stopListening();
+    // Let TTS fully release the audio device.
+    await new Promise((r) => setTimeout(r, 250));
+
+    try {
+      await ensureMicPermission();
+    } catch (_) {
+      throw new Error(friendlyMicError("not-allowed"));
+    }
+
     return new Promise((resolve, reject) => {
-      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!Recognition) {
-        reject(new Error("Speech recognition is not supported in this browser."));
-        return;
-      }
       const recognition = new Recognition();
+      activeRecognition = recognition;
       recognition.lang = "en-US";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 3;
+      recognition.continuous = true;
+
       let settled = false;
+      let lastInterim = "";
+
+      const finish = (fn) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        stopListening();
+        fn();
+      };
+
       const timer = setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        recognition.stop();
-        reject(new Error("Listening timed out — try again."));
-      }, timeoutMs);
-      recognition.onresult = (event) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        const result = event.results[0] && event.results[0][0];
-        resolve({
-          transcript: (result && result.transcript ? result.transcript.trim() : "") || "",
-          confidence: (result && result.confidence) || 0,
+        finish(() => {
+          if (lastInterim.trim()) {
+            resolve({ transcript: lastInterim.trim(), confidence: 0 });
+          } else {
+            reject(new Error(friendlyMicError("no-speech")));
+          }
         });
+      }, timeoutMs);
+
+      recognition.onresult = (event) => {
+        let interim = "";
+        for (let i = event.resultIndex; i < event.results.length; i += 1) {
+          const piece = event.results[i][0];
+          const text = (piece && piece.transcript) || "";
+          if (event.results[i].isFinal) {
+            finish(() =>
+              resolve({
+                transcript: text.trim(),
+                confidence: (piece && piece.confidence) || 0,
+              }),
+            );
+            return;
+          }
+          interim += text;
+        }
+        if (interim.trim()) lastInterim = interim.trim();
       };
+
       recognition.onerror = (event) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        reject(new Error(event.error || "Microphone error"));
+        // no-speech / aborted: keep listening until timeout if we can
+        if (event.error === "no-speech" || event.error === "aborted") {
+          return;
+        }
+        finish(() => reject(new Error(friendlyMicError(event.error))));
       };
+
       recognition.onend = () => {
         if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        reject(new Error("No speech detected."));
+        // Chrome often ends after a short silence — restart once if still in window.
+        try {
+          recognition.start();
+        } catch (_) {
+          finish(() => {
+            if (lastInterim.trim()) {
+              resolve({ transcript: lastInterim.trim(), confidence: 0 });
+            } else {
+              reject(new Error(friendlyMicError("no-speech")));
+            }
+          });
+        }
       };
-      recognition.start();
+
+      try {
+        recognition.start();
+      } catch (e) {
+        finish(() =>
+          reject(
+            new Error(
+              e.message ||
+                "Could not start microphone. Close other tabs using the mic and try again.",
+            ),
+          ),
+        );
+      }
     });
   }
 
@@ -131,8 +234,10 @@
   global.SpeakDaySpeech = {
     speak,
     stopSpeaking,
+    stopListening,
     listenOnce,
     supportsSpeechRecognition,
     similarityScore,
+    ensureMicPermission,
   };
 })(window);

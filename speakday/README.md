@@ -17,11 +17,19 @@ http://localhost/speakday/
 
 Non serve `npm`, non serve PHP, non serve MySQL.
 
-## Se non senti l’audio
+## Se il microfono dice “No speech” / non ascolta
 
-- Usa Chrome o Edge (il TTS è del browser)  
+1. Usa **Chrome o Edge** (non Firefox/Safari)  
+2. Apri proprio `http://localhost/speakday/` (non `file://`)  
+3. Quando Chrome chiede il microfono → **Consenti**  
+4. Aspetta che il partner finisca di parlare, poi clicca **Tap to speak**  
+5. Parla in inglese subito dopo “Listening…”  
+6. Se continua a fallire: usa il box **Or type your answer** sotto i pulsanti
+
+## Se non senti l’audio del partner
+
 - Clicca prima un pulsante della pagina, poi “Start audio conversation”  
-- Il microfono funziona meglio su `http://localhost/...` (non su `file://`)
+- Controlla volume Windows / scheda audio
 
 ## Struttura
 

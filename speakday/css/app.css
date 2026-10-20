@@ -391,6 +391,45 @@ body {
   color: color-mix(in srgb, var(--ink) 60%, transparent);
 }
 
+.note.listen-tip {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.type-answer {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.type-answer label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pine);
+}
+
+.type-answer textarea {
+  width: 100%;
+  border: 1px solid var(--mist);
+  border-radius: 12px;
+  padding: 0.7rem 0.85rem;
+  background: var(--paper);
+  color: var(--ink);
+  resize: vertical;
+  min-height: 4rem;
+}
+
+.type-answer button {
+  justify-self: start;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  border: 1px solid #e2c897;
+  background: var(--amber-soft);
+  color: #4a3210;
+  cursor: pointer;
+}
+
 .phrases h2 {
   margin: 0 0 0.85rem;
   font-family: var(--font-display);

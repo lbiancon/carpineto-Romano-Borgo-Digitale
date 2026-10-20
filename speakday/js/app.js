@@ -3,6 +3,7 @@
   const {
     speak,
     stopSpeaking,
+    stopListening,
     listenOnce,
     supportsSpeechRecognition,
     similarityScore,
@@ -43,6 +44,7 @@
 
   function resetSession() {
     stopSpeaking();
+    stopListening();
     state.turnIndex = 0;
     state.phase = "idle";
     state.showHint = false;
@@ -50,6 +52,22 @@
     state.score = null;
     state.error = null;
     state.phraseIndex = 0;
+    render();
+  }
+
+  function applyAnswer(text) {
+    const t = turn();
+    if (!isYouTurn(t)) return;
+    const answer = (text || "").trim();
+    if (!answer) {
+      state.error = "Type or speak your answer first.";
+      render();
+      return;
+    }
+    state.heard = answer;
+    state.score = similarityScore(t.suggested, answer);
+    state.error = null;
+    state.phase = "feedback";
     render();
   }
 
@@ -140,21 +158,25 @@
   async function hearUser() {
     const t = turn();
     if (!isYouTurn(t)) return;
+    stopSpeaking();
     state.phase = "listening";
     state.error = null;
     state.heard = "";
     state.score = null;
     render();
     try {
-      const result = await listenOnce();
-      state.heard = result.transcript;
-      state.score = similarityScore(t.suggested, result.transcript);
-      state.phase = "feedback";
+      const result = await listenOnce(20000);
+      if (!result.transcript) {
+        throw new Error(
+          "No speech heard. Speak clearly in English, or type your answer below.",
+        );
+      }
+      applyAnswer(result.transcript);
     } catch (e) {
       state.error = e.message || "Could not hear you";
       state.phase = "your-turn";
+      render();
     }
-    render();
   }
 
   async function playSuggested() {
@@ -284,13 +306,17 @@
       if (t && t.role === "partner" && state.phase === "idle") {
         controls += `<button type="button" class="secondary" data-action="continue">Continue</button>`;
       }
+      if (state.phase === "listening" && isYouTurn(t)) {
+        controls += `<button type="button" class="primary" disabled>Listening… speak now</button>`;
+        controls += `<button type="button" class="ghost" data-action="cancel-mic">Cancel mic</button>`;
+      }
       if ((state.phase === "your-turn" || state.phase === "feedback") && isYouTurn(t)) {
         if (state.mode === "shadow") {
           controls += `<button type="button" class="primary" data-action="shadow">Hear model answer</button>`;
         } else {
           controls += `<button type="button" class="primary" data-action="mic" ${
             micOk ? "" : "disabled"
-          }>${micOk ? "Tap to speak" : "Mic unavailable — use hint"}</button>`;
+          }>${micOk ? "Tap to speak" : "Mic unavailable — type below"}</button>`;
         }
         controls += `<button type="button" class="secondary" data-action="suggested">Play suggested line</button>`;
         controls += `<button type="button" class="ghost" data-action="hint">${
@@ -305,6 +331,15 @@
       controls += `<label class="autoplay"><input type="checkbox" data-action="autoplay" ${
         state.autoPlay ? "checked" : ""
       }/> Auto-play partner</label>`;
+
+      const typeBox =
+        isYouTurn(t) && state.phase !== "partner" && state.phase !== "idle"
+          ? `<div class="type-answer">
+              <label for="typed-answer">Or type your answer (if mic fails)</label>
+              <textarea id="typed-answer" rows="2" placeholder="Type in English, then click Use typed answer">${esc(state.heard || "")}</textarea>
+              <button type="button" class="secondary" data-action="typed">Use typed answer</button>
+            </div>`
+          : "";
 
       main = `
         <section class="conversation">
@@ -327,18 +362,20 @@
             <article class="bubble you ${youActive ? "active" : ""}">
               <header>
                 <span>You</span>
-                ${state.phase === "listening" ? '<em class="pulse mic">listening…</em>' : ""}
+                ${state.phase === "listening" ? '<em class="pulse mic">listening… speak now</em>' : ""}
               </header>
               ${youBody}
             </article>
           </div>
           ${state.error ? `<p class="error">${esc(state.error)}</p>` : ""}
-          <div class="controls">${controls}</div>
           ${
-            !micOk
-              ? `<p class="note">Tip: Chrome/Edge support the microphone. Otherwise use “Play suggested line”, speak aloud, then Next.</p>`
+            state.phase === "listening"
+              ? `<p class="note listen-tip">Allow the mic if Chrome asks. Speak clearly in English for up to 20 seconds.</p>`
               : ""
           }
+          <div class="controls">${controls}</div>
+          ${typeBox}
+          <p class="note">Mic tip: use <strong>Chrome or Edge</strong> on <code>http://localhost/speakday/</code>, allow microphone, wait until partner audio stops, then tap speak.</p>
         </section>`;
     } else {
       const items = d.phrases
@@ -354,7 +391,7 @@
         .join("");
       main = `
         <section class="phrases">
-          <h2>Phrase drill — say each three times</h2>
+          <h2>Phrase drill — ${d.phrases.length} phrases · say each three times</h2>
           <ul>${items}</ul>
           <div class="controls">
             <button type="button" class="primary" data-action="play-phrase">Play current phrase</button>
@@ -427,6 +464,16 @@
     if (action === "start") void startConversation();
     if (action === "continue") void afterPartnerAdvance();
     if (action === "mic") void hearUser();
+    if (action === "cancel-mic") {
+      stopListening();
+      state.phase = "your-turn";
+      state.error = "Mic cancelled. Try again or type your answer.";
+      render();
+    }
+    if (action === "typed") {
+      const box = root.querySelector("#typed-answer");
+      applyAnswer(box ? box.value : "");
+    }
     if (action === "suggested") void playSuggested();
     if (action === "shadow") void shadowLine();
     if (action === "hint") {
@@ -436,6 +483,7 @@
     if (action === "next") void nextAfterYou();
     if (action === "stop") {
       stopSpeaking();
+      stopListening();
       state.phase = "idle";
       render();
     }
