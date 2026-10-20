@@ -12,6 +12,14 @@ No Node. No extra ports. Only Apache.
 
 Details: [`speakday/README.md`](speakday/README.md)
 
-## Optional (developers)
+## Optional (developers / Vite)
 
-The folder `english-speak/` is a Vite/React version of the same app. You do **not** need it for XAMPP.
+The folder `english-speak/` is a React/Vite version of the same app. You do **not** need it for XAMPP.
+
+```bash
+cd english-speak
+npm install
+npm run dev
+```
+
+See [`english-speak/README.md`](english-speak/README.md) for details.
