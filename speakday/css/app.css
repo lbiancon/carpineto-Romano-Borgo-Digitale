@@ -540,3 +540,153 @@ body {
   padding: 0.1em 0.35em;
   border-radius: 4px;
 }
+
+.xampp-banner .linkish {
+  border: 0;
+  background: transparent;
+  color: var(--moss);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+.boot {
+  padding: 3rem 1.25rem;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.stat {
+  background: #e8f3ee;
+  border: 1px solid #c9ddd3;
+  border-radius: 14px;
+  padding: 0.75rem 0.6rem;
+  text-align: center;
+}
+
+.stat b {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  letter-spacing: -0.03em;
+}
+
+.stat span {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--ink) 60%, transparent);
+}
+
+.teacher-panel {
+  background: color-mix(in srgb, var(--paper) 92%, white);
+  border: 1px solid color-mix(in srgb, var(--mist) 80%, transparent);
+  border-radius: calc(var(--radius) + 4px);
+  padding: 1.15rem;
+  animation: rise 0.8s 0.15s ease both;
+}
+
+.teacher-panel h2 {
+  margin: 0 0 0.35rem;
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.teacher-panel h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-family: var(--font-display);
+}
+
+.lede-inline {
+  margin: 0;
+  color: color-mix(in srgb, var(--ink) 70%, transparent);
+}
+
+.mission-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.mission {
+  border: 1px solid var(--mist);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
+  background: var(--paper);
+}
+
+.mission.done {
+  opacity: 0.72;
+  border-color: var(--moss);
+}
+
+.mission header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.mission ol {
+  margin: 0 0 0.75rem;
+  padding-left: 1.2rem;
+}
+
+.mission li {
+  margin: 0.2rem 0;
+}
+
+.moves {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.moves li {
+  margin: 0.35rem 0;
+}
+
+.tip-card {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: #fff8ec;
+  border: 1px solid #ebd7b2;
+}
+
+.tip-card h3 {
+  margin: 0 0 0.6rem;
+}
+
+.tip-card .en {
+  font-weight: 500;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 0.95rem;
+}
+
+.tip-card .en-body {
+  color: color-mix(in srgb, var(--ink) 65%, transparent);
+  font-size: 0.95rem;
+}
+
+.tip-card .practice {
+  margin-bottom: 0;
+  padding-top: 0.65rem;
+  border-top: 1px dashed color-mix(in srgb, var(--amber) 45%, transparent);
+}
+
+.tip-count {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--moss);
+}
+
+@media (max-width: 640px) {
+  .stats-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

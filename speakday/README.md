@@ -1,44 +1,43 @@
-# SpeakDay (XAMPP / Apache)
+# SpeakDay — teacher a lungo termine (XAMPP)
 
-Routine audio in inglese per **riunioni** e **vita quotidiana**.
+Routine audio per parlare inglese in **riunioni** e **vita quotidiana**, con:
 
-Funziona con **solo Apache di XAMPP** — niente Node, niente Vite, niente porta 5173.
+- aggiornamento curriculum da GitHub (frasi/nuove funzioni)
+- Path giornaliero + streak
+- Review SRS (ripetizione dilazionata)
+- Trucchi concreti IT/EN
+- Conversation / Shadow / Phrases
 
-## Installazione su XAMPP (Windows)
+## Installazione XAMPP
 
-1. Avvia **solo Apache** da XAMPP Control Panel  
-2. Copia tutta la cartella `speakday` dentro `C:\xampp\htdocs\`  
-   Risultato: `C:\xampp\htdocs\speakday\index.html`  
-3. Apri nel browser (meglio **Chrome** o **Edge**):
+1. Copia tutta la cartella `speakday` in `C:\xampp\htdocs\`
+2. Avvia **solo Apache**
+3. Apri con Chrome/Edge: `http://localhost/speakday/`
 
-```
-http://localhost/speakday/
-```
+## Come si aggiorna da sola
 
-Non serve `npm`, non serve PHP, non serve MySQL.
+All’apertura (e con **Check for updates**) l’app prova a scaricare:
 
-## Se il microfono dice “No speech” / non ascolta
+`speakday/data/curriculum.json`
 
-1. Usa **Chrome o Edge** (non Firefox/Safari)  
-2. Apri proprio `http://localhost/speakday/` (non `file://`)  
-3. Quando Chrome chiede il microfono → **Consenti**  
-4. Aspetta che il partner finisca di parlare, poi clicca **Tap to speak**  
-5. Parla in inglese subito dopo “Listening…”  
-6. Se continua a fallire: usa il box **Or type your answer** sotto i pulsanti
+dal repo GitHub. Se trova una versione più nuova, la salva in `localStorage` e la usa.
 
-## Se non senti l’audio del partner
+Tu **non** devi reinstallare ogni volta per nuove frasi — basta avere internet alla prima apertura del giorno e cliccare **Check for updates** (o semplicemente ricaricare la pagina).
 
-- Clicca prima un pulsante della pagina, poi “Start audio conversation”  
-- Controlla volume Windows / scheda audio
+Se cambi file locali (HTML/JS nuovi), copia di nuovo la cartella `speakday` in `htdocs` una volta.
 
-## Struttura
+## Modalità
 
-```
-speakday/
-  index.html
-  css/app.css
-  js/data.js
-  js/speech.js
-  js/app.js
-  favicon.svg
-```
+| Mode | Uso |
+|------|-----|
+| **Path** | Missioni del giorno + kit riunione |
+| **Conversation** | Dialogo audio lavoro/vita |
+| **Shadow** | Ascolta e ripeti |
+| **Phrases** | Banca pezzi pronti |
+| **Review** | SRS — memoria a lungo termine |
+| **Trucchi** | Tecniche per parlare/capire |
+
+## Microfono
+
+Chrome/Edge + `http://localhost/speakday/` + consenti mic.  
+Se fallisce: box **type your answer**.

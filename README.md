@@ -1,25 +1,17 @@
-# SpeakDay — English audio conversation routine
+# SpeakDay — English fluency teacher
 
-Daily morning + afternoon English speaking trainer for **meetings** and **daily life**.
+Long-term speaking coach for **meetings** and **daily life**.
 
-## Use with XAMPP (recommended)
+## XAMPP (recommended)
 
-No Node. No extra ports. Only Apache.
-
-1. Copy the `speakday/` folder into XAMPP `htdocs`
+1. Copy `speakday/` into XAMPP `htdocs`
 2. Start Apache
 3. Open `http://localhost/speakday/`
 
+The app **auto-updates** its curriculum (`data/curriculum.json`) from GitHub when online. Progress/SRS stay in your browser.
+
 Details: [`speakday/README.md`](speakday/README.md)
 
-## Optional (developers / Vite)
+## Optional Vite copy
 
-The folder `english-speak/` is a React/Vite version of the same app. You do **not** need it for XAMPP.
-
-```bash
-cd english-speak
-npm install
-npm run dev
-```
-
-See [`english-speak/README.md`](english-speak/README.md) for details.
+`english-speak/` is a developer React version. Not required for XAMPP.
