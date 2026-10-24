@@ -8,6 +8,7 @@ use Lumina\App;
 use Lumina\Db;
 use Lumina\DomainException;
 use Lumina\Input;
+use Lumina\Plan;
 use PDOException;
 
 final class Catalog
@@ -124,6 +125,7 @@ final class Catalog
         App::$pdo->beginTransaction();
         try {
             if ($staffId === 0) {
+                Plan::assertStaff(App::$pdo, $businessId, true);
                 $userId = $this->maybeUser(null);
                 Db::run(App::$pdo, 'INSERT INTO staff (business_id, user_id, name, title, bio, color, active) VALUES (:business, :user, :name, :title, :bio, :color, :active)', $payload + [
                     'business' => $businessId,
@@ -133,6 +135,9 @@ final class Catalog
                 $existing = Db::one(App::$pdo, 'SELECT * FROM staff WHERE id = :id AND business_id = :business', ['id' => $staffId, 'business' => $businessId]);
                 if ($existing === null) {
                     throw new DomainException('not_found', 'Persona non trovata.');
+                }
+                if ((int) $existing['active'] !== 1 && (int) $payload['active'] === 1) {
+                    Plan::assertStaff(App::$pdo, $businessId, true);
                 }
                 $userId = $this->maybeUser($existing['user_id'] !== null ? (int) $existing['user_id'] : null);
                 Db::run(App::$pdo, 'UPDATE staff SET user_id = :user, name = :name, title = :title, bio = :bio, color = :color, active = :active WHERE id = :id', $payload + [
@@ -266,11 +271,12 @@ final class Catalog
             if (mb_strlen($password) < 10) {
                 throw new DomainException('validation', 'Per l\'accesso serve una password di almeno 10 caratteri.');
             }
-            Db::run(App::$pdo, 'INSERT INTO users (name, email, password_hash, role) VALUES (:name, :email, :hash, :role)', [
+            Db::run(App::$pdo, 'INSERT INTO users (name, email, password_hash, role, email_verified_at) VALUES (:name, :email, :hash, :role, :verified)', [
                 'name' => Input::str('name', 120, true),
                 'email' => $email,
                 'hash' => password_hash($password, PASSWORD_DEFAULT),
                 'role' => 'staff',
+                'verified' => App::$clock->sql(App::$clock->now()),
             ]);
 
             return Db::id(App::$pdo);

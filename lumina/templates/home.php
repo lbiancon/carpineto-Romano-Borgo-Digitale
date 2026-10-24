@@ -5,6 +5,7 @@
     <p class="lede">Lumina non si limita a segnare gli appuntamenti. Chiude i buchi tra un cliente e l'altro, abbassa il prezzo nelle ore vuote e, se qualcuno disdice, offre il posto a chi è in lista.</p>
     <div class="actions">
       <a class="btn" href="/registrati">Apri la tua agenda</a>
+      <a class="btn ghost" href="/prezzi">Guarda i piani</a>
       <a class="btn ghost" href="/accedi">Entra nella demo</a>
     </div>
   </div>
@@ -17,6 +18,11 @@
     <h2>Disdetta utile</h2>
     <p>Il posto liberato va al primo in lista, con un'offerta che scade. Se nessuno la prende, passa al successivo.</p>
   </aside>
+</section>
+<section class="section" id="piani">
+  <h2>Bottega, Salone, Borgo.</h2>
+  <p class="muted">0 €, 29 € o 79 € al mese, IVA esclusa. L'anno costa dieci mesi. I limiti partono subito, l'addebito no: il pagamento non è ancora collegato.</p>
+  <p><a class="btn" href="/prezzi">Confronta i piani</a></p>
 </section>
 <section class="section" id="vetrina">
   <h2>Attività prenotabili</h2>

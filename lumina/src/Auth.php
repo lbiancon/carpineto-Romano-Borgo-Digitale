@@ -25,11 +25,14 @@ final class Auth
     {
         $user = Db::one($pdo, 'SELECT * FROM users WHERE email = :email', ['email' => mb_strtolower(trim($email), 'UTF-8')]);
         $hash = $user['password_hash'] ?? self::DUMMY_HASH;
-        if (!is_string($hash) || !password_verify($password, $hash)) {
+        if (!is_string($hash) || $hash === '' || !password_verify($password, $hash)) {
             return null;
         }
         if ($user === null) {
             return null;
+        }
+        if ($user['email_verified_at'] === null) {
+            throw new DomainException('validation', 'Questa email non è ancora confermata. Chiedi il codice dalla registrazione.');
         }
         session_regenerate_id(true);
         $_SESSION['uid'] = (int) $user['id'];

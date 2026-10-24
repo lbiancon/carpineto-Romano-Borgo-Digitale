@@ -8,6 +8,8 @@ require __DIR__ . '/migrate.php';
 use Lumina\Clock;
 use Lumina\Db;
 use Lumina\DomainException;
+use Lumina\Passcode;
+use Lumina\Plan;
 use Lumina\Schedule\Bookings;
 use Lumina\Schedule\Engine;
 
@@ -397,6 +399,21 @@ check($score['percent'] === 0 && $score['advise_deposit'] === true, 'indice di a
 
 Db::run($pdo, 'UPDATE services SET active = 0 WHERE id = :id', ['id' => $services['corto']]);
 expect('not_found', fn () => $bookings->bookAppointment($businessId, $services['corto'], $staffIds['A'], null, $clients['Sara'], at('2026-06-02 11:00:00'), '', false));
+
+echo "\nAccesso e piani\n";
+$code = Passcode::issue($pdo, $clock, 'nuovo@test.local', '127.0.0.1');
+$stored = Db::one($pdo, 'SELECT code_hash FROM login_codes WHERE email = :email ORDER BY id DESC LIMIT 1', ['email' => 'nuovo@test.local']);
+check(is_array($stored) && $stored['code_hash'] !== $code && strlen((string) $stored['code_hash']) === 64, 'il codice in archivio è un hash');
+check(Passcode::check($pdo, $clock, 'nuovo@test.local', $code), 'il codice giusto entra');
+check(!Passcode::check($pdo, $clock, 'nuovo@test.local', $code), 'il codice usato non rientra');
+$burn = Passcode::issue($pdo, $clock, 'altro@test.local', '127.0.0.1');
+for ($try = 0; $try < 5; $try++) {
+    Passcode::check($pdo, $clock, 'altro@test.local', '000000');
+}
+check(!Passcode::check($pdo, $clock, 'altro@test.local', $burn), 'dopo cinque errori il codice muore');
+check(!Plan::allows(['plan' => 'bottega'], 'waitlist') && Plan::allows(['plan' => 'salone'], 'waitlist'), 'la lista d\'attesa parte dal Salone');
+Db::run($pdo, "UPDATE businesses SET plan = 'bottega' WHERE id = :id", ['id' => $businessId]);
+expect('plan', fn () => $bookings->joinWaitlist($businessId, $services['taglio'], null, 'Marta', 'marta@test.local', '333', '2026-06-02', '09:00', '13:00', null));
 
 echo "\n{$pass} ok, {$fail} ko\n";
 exit($fail > 0 ? 1 : 0);

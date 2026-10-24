@@ -73,12 +73,13 @@ $instant = static function (DateTimeImmutable $local) use ($clock, $zone): DateT
 };
 
 $userId = static function (string $name, string $email, string $role, string $phone) use ($password): int {
-    Db::run(App::$pdo, 'INSERT INTO users (name, email, password_hash, phone, role) VALUES (:name, :email, :hash, :phone, :role)', [
+    Db::run(App::$pdo, 'INSERT INTO users (name, email, password_hash, phone, role, email_verified_at) VALUES (:name, :email, :hash, :phone, :role, :verified)', [
         'name' => $name,
         'email' => $email,
         'hash' => $password,
         'phone' => $phone,
         'role' => $role,
+        'verified' => $clock->sql($clock->now()),
     ]);
 
     return Db::id(App::$pdo);
@@ -105,10 +106,10 @@ $biancaUser = $userId('Bianca Leone', 'bianca@email.test', 'client', '+39 328 44
 
 Db::run(App::$pdo, 'INSERT INTO businesses (
     owner_user_id, name, slug, category, tagline, description, address, city, phone, email,
-    timezone, cancel_hours, slot_minutes, reliability_threshold
+    timezone, cancel_hours, slot_minutes, reliability_threshold, plan, plan_interval
 ) VALUES (
     :owner, :name, :slug, :category, :tagline, :description, :address, :city, :phone, :email,
-    :timezone, :cancel_hours, :slot_minutes, :threshold
+    :timezone, :cancel_hours, :slot_minutes, :threshold, :plan, :interval
 )', [
     'owner' => $giulia,
     'name' => 'Atelier Luce',
@@ -124,15 +125,17 @@ Db::run(App::$pdo, 'INSERT INTO businesses (
     'cancel_hours' => 12,
     'slot_minutes' => 15,
     'threshold' => 70,
+    'plan' => 'salone',
+    'interval' => 'month',
 ]);
 $hair = Db::id(App::$pdo);
 
 Db::run(App::$pdo, 'INSERT INTO businesses (
     owner_user_id, name, slug, category, tagline, description, address, city, phone, email,
-    timezone, cancel_hours, slot_minutes, reliability_threshold
+    timezone, cancel_hours, slot_minutes, reliability_threshold, plan, plan_interval
 ) VALUES (
     :owner, :name, :slug, :category, :tagline, :description, :address, :city, :phone, :email,
-    :timezone, :cancel_hours, :slot_minutes, :threshold
+    :timezone, :cancel_hours, :slot_minutes, :threshold, :plan, :interval
 )', [
     'owner' => $elena,
     'name' => 'Palestra Borgo',
@@ -148,6 +151,8 @@ Db::run(App::$pdo, 'INSERT INTO businesses (
     'cancel_hours' => 8,
     'slot_minutes' => 15,
     'threshold' => 70,
+    'plan' => 'borgo',
+    'interval' => 'year',
 ]);
 $gym = Db::id(App::$pdo);
 

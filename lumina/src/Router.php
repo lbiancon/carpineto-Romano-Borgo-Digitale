@@ -14,15 +14,16 @@ final class Router
         $this->routes[] = ['GET', $pattern, $handler];
     }
 
-    public function post(string $pattern, callable $handler): void
+    public function post(string $pattern, callable $handler, bool $csrf = true): void
     {
-        $this->routes[] = ['POST', $pattern, $handler];
+        $this->routes[] = ['POST', $pattern, $handler, $csrf];
     }
 
     public function dispatch(string $method, string $path): void
     {
         $path = $path === '/' ? '/' : rtrim($path, '/');
-        foreach ($this->routes as [$routeMethod, $pattern, $handler]) {
+        foreach ($this->routes as $route) {
+            [$routeMethod, $pattern, $handler] = $route;
             if ($routeMethod !== $method) {
                 continue;
             }
@@ -30,7 +31,7 @@ final class Router
             if (preg_match($regex, $path, $matches) !== 1) {
                 continue;
             }
-            if ($method === 'POST') {
+            if ($method === 'POST' && ($route[3] ?? true) === true) {
                 Csrf::check();
             }
             $params = [];

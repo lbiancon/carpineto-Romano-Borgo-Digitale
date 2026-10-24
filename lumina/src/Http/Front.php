@@ -6,7 +6,6 @@ namespace Lumina\Http;
 
 use Lumina\App;
 use Lumina\Auth;
-use Lumina\Category;
 use Lumina\Db;
 use Lumina\DomainException;
 use Lumina\HttpException;
@@ -32,18 +31,6 @@ final class Front
         ]);
     }
 
-    public function loginForm(): void
-    {
-        if (Auth::user(App::$pdo) !== null) {
-            header('Location: /app');
-            exit;
-        }
-        View::render('auth/login', [
-            'title' => 'Accedi',
-            'demo' => Db::one(App::$pdo, 'SELECT id FROM businesses WHERE slug = :slug', ['slug' => 'atelier-luce']) !== null,
-        ]);
-    }
-
     public function login(): void
     {
         $email = Input::email('email');
@@ -59,97 +46,6 @@ final class Front
             $next = (string) $user['role'] === 'client' ? '/portale' : '/app';
         }
         header('Location: ' . $next);
-        exit;
-    }
-
-    public function registerForm(): void
-    {
-        View::render('auth/register', [
-            'title' => 'Apri Lumina',
-            'categories' => Category::cases(),
-        ]);
-    }
-
-    public function register(): void
-    {
-        $account = Input::choice('account', ['business', 'client']);
-        $name = Input::str('name', 120, true);
-        if (mb_strlen($name) < 2) {
-            throw new DomainException('validation', 'Il nome è troppo corto.');
-        }
-        $email = Input::email('email');
-        $password = Input::str('password', 200, true);
-        $confirm = Input::str('password_confirm', 200, true);
-        if (mb_strlen($password) < 10) {
-            throw new DomainException('validation', 'La password deve avere almeno 10 caratteri.');
-        }
-        if (!hash_equals($password, $confirm)) {
-            throw new DomainException('validation', 'Le password non coincidono.');
-        }
-        $phone = Input::phone('phone');
-        App::$pdo->beginTransaction();
-        try {
-            Db::run(App::$pdo, 'INSERT INTO users (name, email, password_hash, phone, role) VALUES (:name, :email, :hash, :phone, :role)', [
-                'name' => $name,
-                'email' => $email,
-                'hash' => password_hash($password, PASSWORD_DEFAULT),
-                'phone' => $phone !== '' ? $phone : null,
-                'role' => $account === 'business' ? 'owner' : 'client',
-            ]);
-            $userId = Db::id(App::$pdo);
-            if ($account === 'business') {
-                $businessName = Input::str('business_name', 140, true);
-                $category = Input::choice('category', array_map(static fn (Category $c): string => $c->value, Category::cases()));
-                $city = Input::str('city', 80, true);
-                $slug = $this->uniqueSlug(slugify($businessName));
-                Db::run(App::$pdo, 'INSERT INTO businesses (
-                    owner_user_id, name, slug, category, tagline, description, city, email, phone, timezone
-                ) VALUES (
-                    :owner, :name, :slug, :category, :tagline, :description, :city, :email, :phone, :timezone
-                )', [
-                    'owner' => $userId,
-                    'name' => $businessName,
-                    'slug' => $slug,
-                    'category' => $category,
-                    'tagline' => 'Prenotazioni aperte',
-                    'description' => '',
-                    'city' => $city,
-                    'email' => $email,
-                    'phone' => $phone,
-                    'timezone' => 'Europe/Rome',
-                ]);
-                $businessId = Db::id(App::$pdo);
-                foreach ([1, 2, 3, 4, 5] as $day) {
-                    foreach ([['09:00:00', '13:00:00'], ['15:00:00', '19:00:00']] as [$start, $end]) {
-                        Db::run(App::$pdo, 'INSERT INTO weekly_hours (business_id, staff_id, weekday, start_time, end_time) VALUES (:business, NULL, :weekday, :start_time, :end_time)', [
-                            'business' => $businessId,
-                            'weekday' => $day,
-                            'start_time' => $start,
-                            'end_time' => $end,
-                        ]);
-                    }
-                }
-            }
-            App::$pdo->commit();
-        } catch (PDOException $exception) {
-            if (App::$pdo->inTransaction()) {
-                App::$pdo->rollBack();
-            }
-            if (Db::duplicate($exception)) {
-                throw new DomainException('validation', 'Questa email è già registrata. Accedi.');
-            }
-            throw $exception;
-        } catch (\Throwable $exception) {
-            if (App::$pdo->inTransaction()) {
-                App::$pdo->rollBack();
-            }
-            throw $exception;
-        }
-        Auth::loginId($userId);
-        flash('ok', $account === 'business'
-            ? 'Attività aperta. Adesso aggiungi un servizio e almeno una persona.'
-            : 'Account creato. Le prenotazioni con questa email compariranno qui.');
-        header('Location: ' . ($account === 'business' ? '/app/servizi' : '/portale'));
         exit;
     }
 
@@ -319,18 +215,5 @@ final class Front
         header('Content-Disposition: attachment; filename="lumina.ics"');
         echo $ics;
         exit;
-    }
-
-    private function uniqueSlug(string $base): string
-    {
-        $slug = $base;
-        for ($i = 2; $i < 40; $i++) {
-            $found = Db::one(App::$pdo, 'SELECT id FROM businesses WHERE slug = :slug', ['slug' => $slug]);
-            if ($found === null) {
-                return $slug;
-            }
-            $slug = $base . '-' . $i;
-        }
-        throw new DomainException('conflict', 'Non riesco a creare un indirizzo univoco. Cambia il nome.');
     }
 }

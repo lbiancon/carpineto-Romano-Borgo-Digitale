@@ -11,6 +11,7 @@ use Lumina\DomainException;
 use Lumina\HttpException;
 use Lumina\Input;
 use Lumina\Insights;
+use Lumina\Plan;
 
 final class Studio
 {
@@ -152,6 +153,7 @@ final class Studio
     {
         $workspace = Guard::workspace(true);
         $businessId = (int) $workspace['business']['id'];
+        Plan::assertFeature(App::$pdo, $businessId, 'packages');
         $packageId = $id === null ? 0 : (int) $id;
         $serviceId = Input::int('service_id', 0, 999999999, false);
         if ($serviceId > 0) {
@@ -241,6 +243,7 @@ final class Studio
     {
         $workspace = Guard::workspace(true);
         $businessId = (int) $workspace['business']['id'];
+        Plan::assertRule(App::$pdo, $businessId);
         $serviceId = Input::int('service_id', 0, 999999999, false);
         $weekday = Input::int('weekday', 0, 7, false);
         $start = Input::time('start_time');
@@ -284,6 +287,11 @@ final class Studio
     public function analytics(): void
     {
         $workspace = Guard::workspace();
+        if (!Plan::allows($workspace['business'], 'analytics')) {
+            flash('err', 'Le analisi sono nel piano Borgo.');
+            header('Location: /app/piano');
+            exit;
+        }
         Guard::view('app/analytics', $workspace, [
             'title' => 'Analisi',
             'picture' => (new Insights(App::$pdo, App::$clock, App::$engine))->picture($workspace['business']),

@@ -28,6 +28,7 @@
           <a class="<?= path_is('/app/prezzi') ? 'active' : '' ?>" href="/app/prezzi">Prezzo vivo</a>
           <a class="<?= path_is('/app/pacchetti') ? 'active' : '' ?>" href="/app/pacchetti">Tessere</a>
           <a class="<?= path_is('/app/impostazioni') ? 'active' : '' ?>" href="/app/impostazioni">Impostazioni</a>
+          <a class="<?= path_is('/app/piano') ? 'active' : '' ?>" href="/app/piano">Piano</a>
         <?php endif; ?>
       </nav>
       <a href="/b/<?= e($business['slug']) ?>">Pagina pubblica</a>

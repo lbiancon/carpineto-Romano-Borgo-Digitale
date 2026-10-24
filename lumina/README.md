@@ -32,6 +32,36 @@ Password di tutti gli account: `Lumina-demo-2026`
 
 Pagine pubbliche: `/b/atelier-luce` e `/b/palestra-borgo`. Nel salone, il trattamento lampo delle 16 nel primo pomeriggio aperto è lo slot ideale tra un taglio e un colore.
 
+## Ingresso
+
+La registrazione chiede un codice di 6 cifre, valido 10 minuti, monouso, con al massimo 5 tentativi. In alternativa ci sono Google e Apple, se l'installazione ha le chiavi. Un'email non confermata non viene agganciata a un account già presente.
+
+Senza `LUMINA_SMTP_HOST` la lettera resta nella pagina del codice: è la posta locale, non un invio vero. Con SMTP il codice parte e non viene più mostrato.
+
+```
+LUMINA_PUBLIC_URL=https://agenda.example
+LUMINA_APP_KEY=una-stringa-lunga-almeno-32-caratteri
+LUMINA_GOOGLE_CLIENT_ID=
+LUMINA_GOOGLE_CLIENT_SECRET=
+LUMINA_APPLE_CLIENT_ID=
+LUMINA_APPLE_TEAM_ID=
+LUMINA_APPLE_KEY_ID=
+LUMINA_APPLE_PRIVATE_KEY=/percorso/AuthKey.p8
+LUMINA_SMTP_HOST=
+LUMINA_SMTP_PORT=587
+LUMINA_SMTP_USER=
+LUMINA_SMTP_PASS=
+LUMINA_MAIL_FROM=noreply@example
+```
+
+URI da registrare: `/auth/google/ritorno` e `/auth/apple/ritorno`.
+
+## Piani
+
+IVA esclusa. Bottega 0 €: 1 persona, 40 prenotazioni al mese, slot ideale. Salone 29 € al mese o 290 € l'anno: 8 persone, prezzo vivo, lista, tessere, corsi, export. Borgo 79 € al mese o 790 € l'anno: 40 persone, analisi, regole di prezzo senza tetto. L'anno costa dieci mesi.
+
+Il piano si attiva subito e i limiti valgono. Non parte alcun addebito: il pagamento online non è collegato. In demo Atelier Luce è Salone, Palestra Borgo è Borgo.
+
 ## Cosa non fa
 
-Un solo locale per attività. Niente pagamenti online, niente gateway di messaggi, niente account staff che modifica prezzi o impostazioni.
+Un solo locale per attività. Niente pagamenti online, niente SMS, niente account staff che modifica prezzi o impostazioni. Le email partono solo se configuri l'SMTP.

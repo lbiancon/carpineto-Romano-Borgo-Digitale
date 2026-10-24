@@ -9,6 +9,7 @@ use DateTimeZone;
 use Lumina\Clock;
 use Lumina\Db;
 use Lumina\DomainException;
+use Lumina\Plan;
 use Lumina\Policy;
 use PDO;
 use PDOException;
@@ -96,6 +97,7 @@ final class Bookings
         string $notes,
         bool $usePackage,
     ): array {
+        Plan::assertFeature($this->pdo, $businessId, 'series');
         $occurrences = max(2, min(Policy::MAX_SERIES, $occurrences));
         $business = $this->business($businessId);
         $zone = $this->engine->zone($business);
@@ -289,6 +291,7 @@ final class Bookings
         string $timeTo,
         ?int $userId,
     ): array {
+        Plan::assertFeature($this->pdo, $businessId, 'waitlist');
         if ($timeFrom >= $timeTo) {
             throw new DomainException('validation', 'L\'orario di fine deve essere successivo all\'inizio.');
         }
@@ -472,6 +475,7 @@ final class Bookings
         string $notes,
     ): array {
         return $this->tx(function () use ($businessId, $serviceId, $staffId, $resourceId, $startsAt, $capacity, $notes): array {
+            Plan::assertFeature($this->pdo, $businessId, 'classes');
             $staff = $this->lockStaff($staffId);
             if ((int) $staff['business_id'] !== $businessId || (int) $staff['active'] !== 1) {
                 throw new DomainException('validation', 'Operatore non disponibile.');
@@ -567,6 +571,7 @@ final class Bookings
             if ($session === null || (string) $session['status'] !== 'scheduled') {
                 throw new DomainException('conflict', 'Il corso non è prenotabile.');
             }
+            Plan::assertFeature($this->pdo, (int) $session['business_id'], 'classes');
             if ($this->clock->parseUtc((string) $session['starts_at']) <= $this->clock->now()) {
                 throw new DomainException('policy', 'Il corso è già iniziato.');
             }
@@ -713,6 +718,7 @@ final class Bookings
     public function sellPackage(int $businessId, int $clientId, int $packageId): array
     {
         return $this->tx(function () use ($businessId, $clientId, $packageId): array {
+            Plan::assertFeature($this->pdo, $businessId, 'packages');
             $client = Db::one(
                 $this->pdo,
                 'SELECT * FROM clients WHERE id = :id AND business_id = :business FOR UPDATE',
@@ -783,6 +789,7 @@ final class Bookings
             throw new DomainException('validation', 'Cliente non trovato.');
         }
         $business = $this->business($businessId);
+        Plan::assertBooking($this->pdo, $this->clock, $business);
         if (!$allowPast && $startsAt <= $this->clock->now()) {
             throw new DomainException('policy', 'Non si può prenotare un orario già iniziato.');
         }

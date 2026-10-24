@@ -14,6 +14,7 @@
     <a class="wordmark" href="/"><span class="mark" aria-hidden="true"></span> Lumina</a>
     <nav>
       <a href="/#vetrina">Vetrina</a>
+      <a href="/prezzi">Piani</a>
       <a href="/accedi">Accedi</a>
       <a class="btn small" href="/registrati">Apri l'agenda</a>
     </nav>

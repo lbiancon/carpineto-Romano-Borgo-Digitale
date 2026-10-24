@@ -8,6 +8,7 @@ use Lumina\Http\Booking;
 use Lumina\Http\Catalog;
 use Lumina\Http\Desk;
 use Lumina\Http\Front;
+use Lumina\Http\Gate;
 use Lumina\Http\People;
 use Lumina\Http\Studio;
 use Lumina\Schedule\Bookings;
@@ -86,6 +87,7 @@ final class App
     {
         self::$debug = getenv('LUMINA_DEBUG') === '1';
         self::$pdo = Db::connect();
+        Upgrade::apply(self::$pdo);
         self::$clock = new Clock();
         self::$engine = new Engine(self::$pdo, self::$clock);
         self::$bookings = new Bookings(self::$pdo, self::$clock, self::$engine);
@@ -101,11 +103,21 @@ final class App
         $people = new People();
         $studio = new Studio();
 
+        $gate = new Gate();
         $router->get('/', $front->home(...));
-        $router->get('/accedi', $front->loginForm(...));
+        $router->get('/prezzi', $gate->plans(...));
+        $router->get('/accedi', $gate->enter(...));
         $router->post('/accedi', $front->login(...));
-        $router->get('/registrati', $front->registerForm(...));
-        $router->post('/registrati', $front->register(...));
+        $router->get('/registrati', $gate->show(...));
+        $router->post('/registrati/codice/invia', $gate->sendCode(...));
+        $router->get('/registrati/codice', $gate->codeForm(...));
+        $router->post('/registrati/codice', $gate->verifyCode(...));
+        $router->get('/registrati/profilo', $gate->profileForm(...));
+        $router->post('/registrati/profilo', $gate->profile(...));
+        $router->get('/auth/google', $gate->google(...));
+        $router->get('/auth/google/ritorno', $gate->googleReturn(...));
+        $router->get('/auth/apple', $gate->apple(...));
+        $router->post('/auth/apple/ritorno', $gate->appleReturn(...), false);
         $router->post('/esci', $front->logout(...));
         $router->get('/portale', $front->portal(...));
         $router->post('/portale/appuntamenti/{id}/annulla', $front->portalCancel(...));
@@ -171,6 +183,8 @@ final class App
         $router->post('/app/prezzi', $studio->saveRule(...));
         $router->post('/app/prezzi/{id}', $studio->toggleRule(...));
         $router->get('/app/analisi', $studio->analytics(...));
+        $router->get('/app/piano', $gate->planPage(...));
+        $router->post('/app/piano', $gate->choosePlan(...));
         $router->get('/app/impostazioni', $studio->settings(...));
         $router->post('/app/impostazioni', $studio->saveSettings(...));
         $router->post('/app/chiusure', $studio->saveClosure(...));

@@ -12,6 +12,7 @@ use Lumina\DomainException;
 use Lumina\HttpException;
 use Lumina\Input;
 use Lumina\Insights;
+use Lumina\Plan;
 
 final class Desk
 {
@@ -220,6 +221,7 @@ final class Desk
     public function export(): void
     {
         $workspace = Guard::workspace();
+        Plan::assertFeature(App::$pdo, (int) $workspace['business']['id'], 'export');
         $zone = App::$engine->zone($workspace['business']);
         $anchor = valid_date((string) ($_GET['data'] ?? '')) ?? App::$clock->today($zone);
         $local = new DateTimeImmutable($anchor . ' 00:00:00', $zone);

@@ -5,9 +5,10 @@ CREATE TABLE users (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(120) NOT NULL,
     email VARCHAR(190) NOT NULL,
-    password_hash VARCHAR(255) NOT NULL,
+    password_hash VARCHAR(255) NULL,
     phone VARCHAR(40) NULL,
     role ENUM('owner', 'staff', 'client') NOT NULL,
+    email_verified_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_users_email (email)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -28,6 +29,8 @@ CREATE TABLE businesses (
     cancel_hours SMALLINT UNSIGNED NOT NULL DEFAULT 12,
     slot_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 15,
     reliability_threshold TINYINT UNSIGNED NOT NULL DEFAULT 70,
+    plan ENUM('bottega', 'salone', 'borgo') NOT NULL DEFAULT 'salone',
+    plan_interval ENUM('month', 'year') NOT NULL DEFAULT 'month',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_business_slug (slug),
     CONSTRAINT fk_business_owner FOREIGN KEY (owner_user_id) REFERENCES users (id),
@@ -313,4 +316,49 @@ CREATE TABLE notifications (
     KEY ix_notif_user (user_id, read_at, id),
     CONSTRAINT fk_notif_business FOREIGN KEY (business_id) REFERENCES businesses (id) ON DELETE CASCADE,
     CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE login_codes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(190) NOT NULL,
+    code_hash CHAR(64) NOT NULL,
+    attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    created_at DATETIME NOT NULL,
+    ip_hash CHAR(64) NOT NULL,
+    KEY ix_codes_email (email, created_at),
+    KEY ix_codes_ip (ip_hash, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE oauth_states (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    nonce CHAR(64) NOT NULL,
+    provider ENUM('google', 'apple') NOT NULL,
+    verifier VARCHAR(128) NOT NULL,
+    nonce_token VARCHAR(64) NOT NULL,
+    intent VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    UNIQUE KEY uq_oauth_nonce (nonce)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE oauth_accounts (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    provider ENUM('google', 'apple') NOT NULL,
+    subject VARCHAR(255) NOT NULL,
+    created_at DATETIME NOT NULL,
+    UNIQUE KEY uq_oauth_subject (provider, subject),
+    KEY ix_oauth_user (user_id),
+    CONSTRAINT fk_oauth_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE mail_letters (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(190) NOT NULL,
+    subject VARCHAR(180) NOT NULL,
+    body TEXT NOT NULL,
+    created_at DATETIME NOT NULL,
+    KEY ix_letters (email, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
