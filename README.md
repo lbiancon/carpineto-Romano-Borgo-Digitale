@@ -2,7 +2,7 @@
 
 Due applicazioni convivono in questo repository.
 
-- [Lumina](lumina/README.md) — agenda per appuntamenti e corsi (PHP 8.5, MySQL). Parrucchieri, palestre e studi.
+- [Lumina](lumina/README.md) — agenda per appuntamenti e corsi (PHP 8.5.12, MySQL o MariaDB di XAMPP). Parrucchieri, palestre e studi.
 - [SpeakDay](english-speak/README.md) — allenamento quotidiano di inglese parlato.
 
 # SpeakDay — English audio conversation routine

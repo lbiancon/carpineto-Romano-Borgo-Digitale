@@ -16,6 +16,19 @@ Poi apri http://127.0.0.1:8080
 
 `setup.sh` applica lo schema se manca e carica la demo. `php bin/seed.php --fresh` la ricrea. `php bin/selftest.php` esegue i controlli sul database `lumina_test`.
 
+## XAMPP su Windows
+
+Il 21 ottobre 2026 PHP ha corretto due falle critiche di esecuzione remota, CVE-2026-109618 e CVE-2026-109619. Un XAMPP più vecchio di 8.5.12 le ha ancora. Lumina non parte sotto quella soglia.
+
+1. Chiudi il pannello XAMPP. Se reinstalli nella stessa cartella, copia prima `C:\xampp\mysql\data`.
+2. Installa [XAMPP 8.5.12](https://www.apachefriends.org/download.html) (PHP 8.5.12, MariaDB 10.11). Le build 8.4.27 e 8.3.36 sono corrette, ma questa agenda usa PHP 8.5.
+3. Avvia MySQL dal pannello.
+4. Nella cartella `lumina` lancia `bin\xampp.bat`.
+
+Lo script crea i database `lumina` e `lumina_test`, l'utente `lumina`, e un virtual host sulla porta 8080 con la cartella `public`. La porta 80 del pannello non cambia. `Require local` fa rispondere la pagina solo da questo PC: XAMPP non va esposto su internet. Poi riavvia Apache dal pannello e apri http://127.0.0.1:8080
+
+Se root di MariaDB ha una password, impostala prima del lancio: `set XAMPP_MYSQL_ROOT_PASSWORD=...`. Se XAMPP non è in `C:\xampp`, imposta `XAMPP_HOME`.
+
 Database locale previsto: `lumina` su `127.0.0.1`, utente `lumina`, password `lumina_local`. Variabili opzionali: `LUMINA_DB_HOST`, `LUMINA_DB_PORT`, `LUMINA_DB_NAME`, `LUMINA_DB_USER`, `LUMINA_DB_PASS`. Con `LUMINA_DEBUG=1` gli errori finiscono nella pagina.
 
 ## Demo

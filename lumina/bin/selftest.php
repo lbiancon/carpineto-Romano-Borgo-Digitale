@@ -79,6 +79,7 @@ function clearBookings(): void
     }
 }
 
+check(PHP_VERSION_ID >= 80512, 'PHP è almeno 8.5.12');
 check(parse_money('35') === 3500, 'parse 35 euro');
 check(parse_money('35,50') === 3550, 'parse 35,50');
 check(parse_money('19.99') === 1999, 'parse 19.99');
