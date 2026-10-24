@@ -15,7 +15,7 @@ if (PHP_OS_FAMILY !== 'Windows') {
 $xampp = lumina_xampp_root();
 if ($xampp === null) {
     fwrite(STDERR, "Non trovo la cartella di XAMPP accanto a questo PHP.\n");
-    fwrite(STDERR, "Installa XAMPP 8.5.12 e lancia C:\\xampp\\php\\php.exe bin\\xampp.php\n");
+    fwrite(STDERR, "Imposta XAMPP_HOME sulla cartella già installata e rilancia. Non reinstallare sopra htdocs.\n");
     exit(1);
 }
 
@@ -43,10 +43,6 @@ $conf = "<VirtualHost *:8080>\r\n"
     . "        Require local\r\n"
     . "        DirectoryIndex index.php\r\n"
     . "    </Directory>\r\n"
-    . "    <IfModule php_module>\r\n"
-    . "        php_admin_value session.upload_progress.enabled 0\r\n"
-    . "        php_admin_value fatal_error_backtraces 0\r\n"
-    . "    </IfModule>\r\n"
     . "    ErrorLog \"logs/lumina-error.log\"\r\n"
     . "    CustomLog \"logs/lumina-access.log\" common\r\n"
     . "</VirtualHost>\r\n";

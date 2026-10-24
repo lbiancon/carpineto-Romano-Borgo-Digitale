@@ -13,5 +13,6 @@ if %ERRORLEVEL%==0 (
   php "%~dp0xampp.php"
   exit /b %ERRORLEVEL%
 )
-echo Installa XAMPP 8.5.12 da https://www.apachefriends.org/download.html
+echo Non reinstallare XAMPP sopra la cartella gia in uso.
+echo PHP 8.5.12 serve solo a Lumina. htdocs e mysql\data vanno tenuti.
 exit /b 1

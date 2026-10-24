@@ -18,16 +18,13 @@ Poi apri http://127.0.0.1:8080
 
 ## XAMPP su Windows
 
-Il 21 ottobre 2026 PHP ha corretto due falle critiche di esecuzione remota, CVE-2026-109618 e CVE-2026-109619. Un XAMPP più vecchio di 8.5.12 le ha ancora. Lumina non parte sotto quella soglia.
+Non reinstallare XAMPP sopra `C:\xampp`. L'installer sostituisce `htdocs` e `mysql\data`. I siti e i database che stavano lì non sono in questo repository.
 
-1. Chiudi il pannello XAMPP. Se reinstalli nella stessa cartella, copia prima `C:\xampp\mysql\data`.
-2. Installa [XAMPP 8.5.12](https://www.apachefriends.org/download.html) (PHP 8.5.12, MariaDB 10.11). Le build 8.4.27 e 8.3.36 sono corrette, ma questa agenda usa PHP 8.5.
-3. Avvia MySQL dal pannello.
-4. Nella cartella `lumina` lancia `bin\xampp.bat`.
+`bin\xampp.bat` non cancella quelle cartelle. Crea solo i database `lumina` e `lumina_test` e un virtual host sulla porta 8080. La porta 80 non cambia. Se Apache non si avvia dopo quel comando, rimetti `C:\xampp\apache\conf\httpd.conf.lumina-bak` al posto di `httpd.conf` e cancella `C:\xampp\apache\conf\extra\httpd-lumina.conf`. Poi riavvia Apache: `http://localhost` torna alle app di `htdocs`.
 
-Lo script crea i database `lumina` e `lumina_test`, l'utente `lumina`, e un virtual host sulla porta 8080 con la cartella `public`. La porta 80 del pannello non cambia. `Require local` fa rispondere la pagina solo da questo PC: XAMPP non va esposto su internet. Poi riavvia Apache dal pannello e apri http://127.0.0.1:8080
+Lumina chiede PHP 8.5.12. Se il PHP di XAMPP è più vecchio, l'agenda non parte. Il resto di XAMPP può restare com'è. Le build 8.2.35, 8.3.36 e 8.4.27 chiudono le falle del 21 ottobre 2026, ma questa agenda usa la sintassi di PHP 8.5.
 
-Se root di MariaDB ha una password, impostala prima del lancio: `set XAMPP_MYSQL_ROOT_PASSWORD=...`. Se XAMPP non è in `C:\xampp`, imposta `XAMPP_HOME`.
+Se `htdocs` o MySQL sembrano spariti, fermati: non rilanciare l'installer e non svuotare il Cestino. Controlla se in `C:\xampp\htdocs` e `C:\xampp\mysql\data` ci sono ancora le cartelle dei siti e dei database. Se ci sono, il problema è l'avvio di Apache o MariaDB, non la cancellazione. Se trovi solo la dashboard nuova, cerca una copia (`xampp_old`, `htdocs.old`, la cartella `data` copiata prima della reinstallazione), il Cestino e Versioni precedenti sulle cartelle. Copia il recupero in `C:\recupero-xampp`. Nei database rimetti solo le cartelle delle tue applicazioni: non sovrascrivere `mysql`, `performance_schema` e `phpmyadmin`. `ibdata1` si ricopia solo se la versione di MariaDB è la stessa.
 
 Database locale previsto: `lumina` su `127.0.0.1`, utente `lumina`, password `lumina_local`. Variabili opzionali: `LUMINA_DB_HOST`, `LUMINA_DB_PORT`, `LUMINA_DB_NAME`, `LUMINA_DB_USER`, `LUMINA_DB_PASS`. Con `LUMINA_DEBUG=1` gli errori finiscono nella pagina.
 

@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 php -r 'exit(PHP_VERSION_ID >= 80512 ? 0 : 1);' || {
   echo "Serve PHP 8.5.12 o successivo (correzioni del 21 ottobre 2026). Trovato: $(php -v | head -n 1)" >&2
-  echo "Con XAMPP installa la 8.5.12 da https://www.apachefriends.org/download.html e poi lancia bin\\xampp.bat" >&2
+  echo "Non reinstallare XAMPP sopra la cartella già in uso: htdocs e i database verrebbero sostituiti." >&2
   exit 1
 }
 php -r '
